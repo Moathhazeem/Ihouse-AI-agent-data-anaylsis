@@ -1,0 +1,523 @@
+{
+  "name": "Ihouse AI agent data anaylsis",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        32
+      ],
+      "id": "5bb8abd4-8ba6-4fe9-8c07-86e73be6d029",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json.result) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=System Message — iHouse Comprehensive Inventory & Product Intelligence Agent\n\nRole:\nYou are the Chief Inventory & Product Portfolio Analyst Agent for iHouse (Palestine Apple Authorized Reseller). You perform a complete 4-in-1 inventory intelligence analysis combining Stock On Hand, Product Costs & Margins, Catalog Benchmark Data, and Stock Movement Projections retrieved from Odoo.\n\nData Source & Scope:\nInput data originates from Odoo product records containing:\n- default_code (SKU / Internal Reference)\n- name (Product Name)\n- categ_id (Product Category [id, name])\n- qty_available (Quantity On Hand)\n- free_qty (Available Stock)\n- incoming_qty (Inbound Stock / Expected Procurement)\n- outgoing_qty (Outbound Stock / Customer Demand)\n- list_price (Retail Sales Price)\n- standard_price (Cost Price / COGS)\n\nAnalysis Objectives (4 Core Pillars):\n1. Stock On Hand & Availability:\n   - Identify OUT_OF_STOCK items (free_qty <= 0).\n   - Identify LOW_STOCK items (free_qty between 1 and 3).\n   - Identify HEALTHY_STOCK items (free_qty > 3).\n   - Calculate total physical stock on hand across all SKUs.\n\n2. Product Cost & Margin Analysis:\n   - Calculate Estimated Unit Gross Profit = (list_price - standard_price).\n   - Calculate Gross Margin Percentage = ((list_price - standard_price) / list_price) * 100.\n   - Calculate Total Inventory Valuation at Cost = sum(qty_available * standard_price).\n   - Calculate Potential Retail Valuation = sum(qty_available * list_price).\n   - Flag products with negative or zero margins.\n\n3. Stock Moves & Movement Projections:\n   - Assess net movement risk using incoming_qty and outgoing_qty.\n   - Flag high outbound demand items facing stock exhaustion (outgoing_qty > free_qty).\n   - Flag slow-moving stock (high qty_available with 0 outgoing_qty).\n\n4. Product Portfolio & Category Breakdown:\n   - Group total stock value, product counts, and margins by category (e.g., iPhone, Mac, Accessories).\n\nProcessing Guidelines:\n- Handle Odoo relational arrays like categ_id [id, name] by extracting only the category name string.\n- Perform precise decimal calculations for margin percentages and inventory valuations.\n- Base all outputs strictly on provided input records. Do not invent missing parameters.\n- Output strictly formatted JSON matching the attached JSON Schema."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        32
+      ],
+      "id": "3addac0f-b6f3-4963-954e-4476efe2fec4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        240
+      ],
+      "id": "42e56071-3e63-4ea8-a5c1-5fd1a2f018d4",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5bQnUFfdkzbJs3Ln",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "moathhazeem661@gmail.com",
+        "subject": "erp data anaylsis",
+        "message": "=<!DOCTYPE html>\n<html dir=\"rtl\" lang=\"ar\">\n<head>\n    <meta charset=\"UTF-8\">\n    <style>\n        body { font-family: Tahoma, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 20px; margin: 0; }\n        .container { max-width: 650px; margin: 0 auto; background: #ffffff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }\n        h2 { color: #0f172a; text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-top: 0; }\n        p { font-size: 14px; color: #475569; line-height: 1.6; }\n        .chart-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 25px; text-align: center; }\n        .chart-card h4 { margin-bottom: 12px; color: #334155; font-size: 16px; }\n        .chart-card img { max-width: 100%; height: auto; border-radius: 6px; border: 1px solid #cbd5e1; }\n        .footer { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <h2>📊 تقرير ذكاء المخزون والتحليلات - iHouse</h2>\n        <p>مرحباً فريق العمل،<br>إليك التقرير التحليلي الدوري الشامل لحالة المخزون، وتوزيع التكاليف، وأسعار المنتجات مدعوماً بالرسوم البيانية التوضيحية:</p>\n        \n        <!-- الرسم الأول: الأعمدة -->\n        <div class=\"chart-card\">\n            <h4>1. تقرير الكميات المتاحة (Bar Chart)</h4>\n            <img src=\"{{ $json.chartUrl1 }}\" alt=\"Available Quantities Chart\">\n        </div>\n\n        <!-- الرسم الثاني: الدائري المجوف -->\n        <div class=\"chart-card\">\n            <h4>2. توزيع التكلفة الإجمالية (Doughnut Chart)</h4>\n            <img src=\"{{ $json.chartUrl2 }}\" alt=\"Cost Distribution Chart\">\n        </div>\n\n        <!-- الرسم الثالث: الأعمدة الأفقية -->\n        <div class=\"chart-card\">\n            <h4>3. مقارنة أسعار الوحدات (Horizontal Bar Chart)</h4>\n            <img src=\"{{ $json.chartUrl3 }}\" alt=\"Unit Prices Chart\">\n        </div>\n        \n        <div class=\"footer\">\n            <p>تم توليد وإرسال هذا التقرير أوتوماتيكياً عبر نظام n8n الذكي لشركة iHouse.</p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1232,
+        144
+      ],
+      "id": "9de44d49-8eb7-45af-857b-f90b9a4a1aee",
+      "name": "Send a message",
+      "webhookId": "02c6cb33-3682-4ad9-ac8e-e9c4dc355c90",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9NcBOjKo4wAbWWGE",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://edu-ihouseodoocom.odoo.com/jsonrpc",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"call\",\n  \"params\": {\n    \"service\": \"object\",\n    \"method\": \"execute_kw\",\n    \"args\": [\n      \"edu-ihouseodoocom\",\n      2,\n      \"ab836575dee9cd27a1c32fc34d5a35bd3500295c\",\n      \"product.product\",\n      \"search_read\",\n      [],\n      {\n        \"fields\": [\n          \"default_code\",\n          \"name\",\n          \"categ_id\",\n          \"qty_available\",\n          \"free_qty\",\n          \"incoming_qty\",\n          \"outgoing_qty\",\n          \"list_price\",\n          \"standard_price\"\n        ],\n        \"limit\": 20\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        96,
+        32
+      ],
+      "id": "3f0ffda3-5542-46ae-92d1-fb6ed77b86d5",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"report_title\": \"Inventory Intelligence Report\",\n  \"total_products_analyzed\": 10,\n  \"insights\": [\n    {\n      \"title\": \"Low Stock Alert\",\n      \"description\": \"Some items are running low\",\n      \"evidence\": \"free_qty < 2\"\n    }\n  ],\n  \"detailed_product_analysis\": [\n    {\n      \"sku\": \"IP17-256\",\n      \"product_name\": \"iPhone 17 256GB\",\n      \"category\": \"Smartphones\",\n      \"stock_status\": \"LOW_STOCK\",\n      \"qty_on_hand\": 5,\n      \"available_qty\": 2,\n      \"incoming_qty\": 10,\n      \"outgoing_qty\": 3,\n      \"unit_cost\": 800,\n      \"unit_price\": 1000,\n      \"gross_margin_percent\": 20,\n      \"total_cost_value\": 4000,\n      \"recommended_action\": \"Review replenishment\"\n    }\n  ],\n  \"category_breakdown\": [\n    {\n      \"category_name\": \"Smartphones\",\n      \"product_count\": 10,\n      \"total_category_stock\": 50,\n      \"total_category_cost_value\": 40000\n    }\n  ],\n  \"recommendations\": [\n    {\n      \"priority\": \"high\",\n      \"action\": \"Restock iPhones\",\n      \"reason\": \"High demand\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        240
+      ],
+      "id": "1713e526-21a1-44d1-b8e8-b8c476c74958",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "=output.detailed_product_analysis",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        592,
+        32
+      ],
+      "id": "9f554ca2-b4ee-4580-974a-f5ead5609138",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1hn4BorTEISXpdaQZANCYw0OSLah6ES6Ba3NwskNGAYE",
+          "mode": "list",
+          "cachedResultName": "Ihouse AI agent data anaylsis",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hn4BorTEISXpdaQZANCYw0OSLah6ES6Ba3NwskNGAYE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1761801176,
+          "mode": "list",
+          "cachedResultName": "Inventory Comprehensive Analytics",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hn4BorTEISXpdaQZANCYw0OSLah6ES6Ba3NwskNGAYE/edit#gid=1761801176"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.id }}",
+            "Sku": "={{ $json.sku }}",
+            "Product Name": "={{ $json.product_name }}",
+            "Category": "={{ $json.category }}",
+            "Stock Status": "={{ $json.stock_status }}",
+            "Qty on hand": "={{ $json.qty_on_hand }}",
+            "Available Qty": "={{ $json.available_qty }}",
+            "Incoming Qty": "={{ $json.incoming_qty }}",
+            "Outgoing Qty": "={{ $json.outgoing_qty }}",
+            "Unit Cost": "={{ $json.unit_cost }}",
+            "Unit Price": "={{ $json.unit_price }}",
+            "Gross Margin Percent": "={{ $json.gross_margin_percent }}",
+            "Total Cost Value": "={{ $json.total_cost_value }}",
+            "Recommended Action": "={{ $json.recommended_action }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sku",
+              "displayName": "Sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Stock Status",
+              "displayName": "Stock Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Qty on hand",
+              "displayName": "Qty on hand",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Available Qty",
+              "displayName": "Available Qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Incoming Qty",
+              "displayName": "Incoming Qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Outgoing Qty",
+              "displayName": "Outgoing Qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unit Cost",
+              "displayName": "Unit Cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unit Price",
+              "displayName": "Unit Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gross Margin Percent",
+              "displayName": "Gross Margin Percent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Cost Value",
+              "displayName": "Total Cost Value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Recommended Action",
+              "displayName": "Recommended Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1232,
+        -48
+      ],
+      "id": "cce704da-f7dc-4d91-acb6-fd49bd6bcce3",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "qPcYFvcEFGVnuJDH",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "=inventory_comprehensive_analytics",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "sku",
+              "fieldValue": "={{ $json.sku }}"
+            },
+            {
+              "fieldId": "product_name",
+              "fieldValue": "={{ $json.product_name }}"
+            },
+            {
+              "fieldId": "category",
+              "fieldValue": "={{ $json.category }}"
+            },
+            {
+              "fieldId": "stock_status",
+              "fieldValue": "={{ $json.stock_status }}"
+            },
+            {
+              "fieldId": "qty_on_hand",
+              "fieldValue": "={{ $json.qty_on_hand }}"
+            },
+            {
+              "fieldId": "available_qty",
+              "fieldValue": "={{ $json.available_qty }}"
+            },
+            {
+              "fieldId": "incoming_qty",
+              "fieldValue": "={{ $json.incoming_qty }}"
+            },
+            {
+              "fieldId": "outgoing_qty",
+              "fieldValue": "={{ $json.outgoing_qty }}"
+            },
+            {
+              "fieldId": "unit_cost",
+              "fieldValue": "={{ $json.unit_cost }}"
+            },
+            {
+              "fieldId": "unit_price",
+              "fieldValue": "={{ $json.unit_price }}"
+            },
+            {
+              "fieldId": "gross_margin_percent",
+              "fieldValue": "={{ $json.gross_margin_percent }}"
+            },
+            {
+              "fieldId": "total_cost_value",
+              "fieldValue": "={{ $json.total_cost_value }}"
+            },
+            {
+              "fieldId": "recommended_action",
+              "fieldValue": "={{ $json.recommended_action }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        -48
+      ],
+      "id": "970bc76f-8b82-41ec-95c8-c6babeebbb37",
+      "name": "Create a row2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "mP3my4PJWVYwMgY8",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// 1. الرسم الأول: Grouped Bar Chart (مقارنة تفصيلية لحركات المخزون لأول 10 منتجات)\nconst labels1 = items.map(item => item.json.product_name).slice(0, 10);\nconst availableQty = items.map(item => item.json.available_qty).slice(0, 10);\nconst incomingQty = items.map(item => item.json.incoming_qty).slice(0, 10);\nconst outgoingQty = items.map(item => item.json.outgoing_qty).slice(0, 10);\n\nconst chart1 = {\n  type: 'bar',\n  data: {\n    labels: labels1,\n    datasets: [\n      {\n        label: 'المتاح (Available)',\n        data: availableQty,\n        backgroundColor: 'rgba(54, 162, 235, 0.8)',\n        borderColor: 'rgba(54, 162, 235, 1)',\n        borderWidth: 1\n      },\n      {\n        label: 'الوارد (Incoming)',\n        data: incomingQty,\n        backgroundColor: 'rgba(75, 192, 192, 0.8)',\n        borderColor: 'rgba(75, 192, 192, 1)',\n        borderWidth: 1\n      },\n      {\n        label: 'الصادر (Outgoing)',\n        data: outgoingQty,\n        backgroundColor: 'rgba(255, 99, 132, 0.8)',\n        borderColor: 'rgba(255, 99, 132, 1)',\n        borderWidth: 1\n      }\n    ]\n  },\n  options: {\n    responsive: true,\n    plugins: {\n      title: {\n        display: true,\n        text: 'مقارنة حركة المخزون التفصيلية (المتاح، الوارد، الصادر)',\n        font: { size: 14 }\n      },\n      legend: { position: 'bottom' }\n    },\n    scales: {\n      y: { beginAtZero: true, grid: { color: '#e2e8f0' } },\n      x: { grid: { display: false } }\n    }\n  }\n};\n\n// 2. الرسم الثاني: Advanced Doughnut Chart (توزيع إجمالي التكلفة مع نسب وقيم واضحة)\nconst labels2 = items.map(item => item.json.sku).slice(0, 8);\nconst data2 = items.map(item => item.json.total_cost_value).slice(0, 8);\n\nconst chart2 = {\n  type: 'doughnut',\n  data: {\n    labels: labels2,\n    datasets: [{\n      data: data2,\n      backgroundColor: [\n        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1'\n      ],\n      borderWidth: 2,\n      borderColor: '#ffffff'\n    }]\n  },\n  options: {\n    responsive: true,\n    plugins: {\n      title: {\n        display: true,\n        text: 'توزيع رأس المال المستثمر حسب الـ SKU ($)',\n        font: { size: 14 }\n      },\n      legend: { position: 'right' }\n    }\n  }\n};\n\n// 3. الرسم الثالث: Horizontal Bar Chart (تحليل الأسعار والتكاليف للمنتجات)\nconst labels3 = items.map(item => item.json.product_name).slice(0, 8);\nconst unitPrices = items.map(item => item.json.unit_price).slice(0, 8);\nconst unitCosts = items.map(item => item.json.unit_cost).slice(0, 8);\n\nconst chart3 = {\n  type: 'horizontalBar',\n  data: {\n    labels: labels3,\n    datasets: [\n      {\n        label: 'سعر البيع (Unit Price)',\n        data: unitPrices,\n        backgroundColor: 'rgba(16, 185, 129, 0.7)',\n        borderColor: 'rgba(16, 185, 129, 1)',\n        borderWidth: 1\n      },\n      {\n        label: 'التكلفة (Unit Cost)',\n        data: unitCosts,\n        backgroundColor: 'rgba(239, 68, 68, 0.7)',\n        borderColor: 'rgba(239, 68, 68, 1)',\n        borderWidth: 1\n      }\n    ]\n  },\n  options: {\n    responsive: true,\n    plugins: {\n      title: {\n        display: true,\n        text: 'مقارنة سعر البيع مع تكلفة الوحدة',\n        font: { size: 14 }\n      },\n      legend: { position: 'bottom' }\n    },\n    scales: {\n      x: { beginAtZero: true, grid: { color: '#e2e8f0' } },\n      y: { grid: { display: false } }\n    }\n  }\n};\n\n// توليد روابط الـ API بدقة ووضوح (عرض 700 بكسل لطد خروج رسومات واضحة وعالية الدقة)\nconst chartUrl1 = `https://quickchart.io/chart?w=700&h=350&c=${encodeURIComponent(JSON.stringify(chart1))}`;\nconst chartUrl2 = `https://quickchart.io/chart?w=700&h=350&c=${encodeURIComponent(JSON.stringify(chart2))}`;\nconst chartUrl3 = `https://quickchart.io/chart?w=700&h=350&c=${encodeURIComponent(JSON.stringify(chart3))}`;\n\nreturn [{ json: { chartUrl1, chartUrl2, chartUrl3 } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        144
+      ],
+      "id": "fbfb56e2-fa87-4661-9b13-76ac04ba4b85",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "414a4582-396c-47b3-886c-d18518ac262a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "312b8e1c27ba1ae94b15ee40f5b475cef18128657bfd8917a13927efa9db76b9"
+  },
+  "nodeGroups": [],
+  "id": "dTaGquol5p9WTImB",
+  "tags": []
+}
